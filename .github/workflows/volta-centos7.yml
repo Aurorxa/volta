@@ -45,6 +45,8 @@ jobs:
           context: ./centos7/
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-centos7
+          build-args: |
+            VERSION: ${{ env.VERSION }}
       - name: "签署已发布的Docker映像"
         if: ${{ github.event_name != 'pull_request' }}
         env:

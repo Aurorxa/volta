@@ -45,6 +45,8 @@ jobs:
           context: ./ubuntu/
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu22.04
+          build-args: |
+            VERSION: ${{ env.VERSION }}
       - name: "签署已发布的Docker映像"
         if: ${{ github.event_name != 'pull_request' }}
         env:
