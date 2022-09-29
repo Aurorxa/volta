@@ -7,11 +7,17 @@ on:
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      voltaVersion:
+        type: string
+        description: "请输入volta的版本，如果没有输入，默认就是最新版本"
+        default: 'latest'
 
 env:
   REGISTRY: '' # 如果为空，则使用 DockerHUb
   IMAGE_NAME: volta
-  VERSION: '1.0.8'
+  VERSION: ${{inputs.voltaVersion}}
 
 
 jobs:
