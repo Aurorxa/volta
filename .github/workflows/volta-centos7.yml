@@ -15,7 +15,7 @@ env:
 
 # 任务
 jobs:
-  build: # 作业的名称
+  build:  
     runs-on: ubuntu-latest # 运行环境
     # 步骤
     steps:
