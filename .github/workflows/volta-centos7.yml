@@ -1,0 +1,60 @@
+name: Docker
+on:
+  schedule:
+    - cron: '30 9,17 * * *'
+  push:
+    branches: [ "master" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  REGISTRY: '' # 如果为空，则使用 DockerHUb
+  IMAGE_NAME: volta
+
+
+jobs:
+  build:
+    # 运行环境 
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    # 步骤
+    steps:
+      - name: "拉取仓库代码"
+        uses: actions/checkout@v3
+      - name: "安装除PR之外的cosign工具" # https://github.com/sigstore/cosign-installer
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@f3c664df7af409cb4873aa5068053ba9d61a57b6 #v2.6.0
+        with:
+          cosign-release: 'v1.11.0'
+      - name: "安装Docker buildx"
+        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+      - name: "登录Docker Hub 之类的容器仓库，如：${{ env.REGISTRY }}" 
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: "提取Docker的元数据，如：tags、labels等"
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: "构建和发布Docker镜像"
+        id: build-and-push
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./centos7/
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: "签署已发布的Docker映像"
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
