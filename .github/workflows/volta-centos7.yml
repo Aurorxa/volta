@@ -44,6 +44,7 @@ jobs:
       - name: "测试"
         run: |
           echo ::set-output name=tags::${{ steps.meta.outputs.tags }}
+          docker images -qa
       - name: "构建和发布Docker镜像"
         id: build-and-push
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
