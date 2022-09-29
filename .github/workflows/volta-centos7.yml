@@ -1,4 +1,4 @@
-name: Docker
+name: volta-centos7
 on:
   schedule:
     - cron: '30 9,17 * * *'
