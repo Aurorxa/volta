@@ -7,11 +7,13 @@ on:
   pull_request:
     branches: [ "master" ]
 
+# 环境变量
 env:
   REGISTRY: '' # 如果为空，则使用 DockerHUb
   IMAGE_NAME: volta
   VERSION: 1.0.8
 
+# 任务
 jobs:
   build: # 作业的名称
     # 运行环境
