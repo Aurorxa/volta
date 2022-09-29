@@ -46,6 +46,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: "构建和发布指定版本的Docker镜像"
         if: ${{ env.VERSION != '' }}
+        id: build-specify-version-and-push
         uses: docker/build-push-action@v3
         with:
           context: ./ubuntu/
@@ -53,6 +54,11 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu22.04
           build-args: |
             VERSION: ${{ env.VERSION }}
+      - name: "签署已发布的制定本版本Docker映像"
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-specify-version-and-push.outputs.digest }}            
       - name: "构建和发布最新版本的Docker镜像"
         if: ${{ env.VERSION == '' }}
         id: build-and-push
