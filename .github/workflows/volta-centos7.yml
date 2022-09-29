@@ -44,7 +44,6 @@ jobs:
       - name: "测试"
         run: |
           echo ::set-output name=tags::${{ steps.meta.outputs.tags }}
-          echo ::set-output name=labels::${{ steps.meta.outputs.labels }}
       - name: "构建和发布Docker镜像"
         id: build-and-push
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
@@ -52,7 +51,6 @@ jobs:
           context: ./centos7/
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.VERSION }}
-          labels: ${{ steps.meta.outputs.labels }}
       - name: "签署已发布的Docker映像"
         if: ${{ github.event_name != 'pull_request' }}
         env:
