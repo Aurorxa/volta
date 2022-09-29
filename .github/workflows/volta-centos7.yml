@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: "拉取仓库代码"
         uses: actions/checkout@v3
-      - name: "安装除PR之外的cosign工具" # https://github.com/sigstore/cosign-installer
+      - name: "安装除PR之外的cosign工具"
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@f3c664df7af409cb4873aa5068053ba9d61a57b6 #v2.6.0
         with:
