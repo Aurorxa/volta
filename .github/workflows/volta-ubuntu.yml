@@ -46,7 +46,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: "构建和发布指定版本的Docker镜像"
         if: ${{ env.VERSION != '' }}
-        id: build-and-push
         uses: docker/build-push-action@v3
         with:
           context: ./ubuntu/
