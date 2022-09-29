@@ -17,7 +17,7 @@ on:
 env:
   REGISTRY: '' # 如果为空，则使用 DockerHUb
   IMAGE_NAME: volta
-  VERSION: ${{inputs.voltaVersion}}
+  VERSION: ${{inputs.voltaVersion | 'latest'}} 
 
 
 jobs:
