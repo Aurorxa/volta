@@ -1,5 +1,4 @@
-name: ci
-
+name: Docker
 on:
   schedule:
     - cron: '30 9,17 * * *'
@@ -8,20 +7,24 @@ on:
   pull_request:
     branches: [ "master" ]
 
-# 环境变量
 env:
   REGISTRY: '' # 如果为空，则使用 DockerHUb
   IMAGE_NAME: volta
   VERSION: 1.0.8
 
-# 任务
 jobs:
-  docker:
+  build-volta-centos7:
+    # 运行环境 
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    # 步骤
     steps:
       - name: "拉取仓库代码"
         uses: actions/checkout@v3
-      - name: "安装除PR之外的cosign工具"
+      - name: "安装除PR之外的cosign工具" # https://github.com/sigstore/cosign-installer
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@f3c664df7af409cb4873aa5068053ba9d61a57b6 #v2.6.0
         with:
@@ -58,10 +61,6 @@ jobs:
           tags: ${{ env.VERSION }}
           build-args: |
             VERSION=${{ env.VERSION }}
-        # run: |
-        #   DOCKER_IMAGE=${}
-          
-        #   echo ::set-output name=docker_image::${DOCKER_IMAGE}    
       - name: "签署已发布的Docker映像"
         if: ${{ github.event_name != 'pull_request' }}
         env:
