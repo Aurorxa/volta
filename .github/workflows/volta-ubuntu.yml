@@ -17,7 +17,7 @@ on:
 env:
   REGISTRY: '' # 如果为空，则使用 DockerHUb
   IMAGE_NAME: volta
-  VERSION: ${{inputs.voltaVersion | 'latest'}} 
+  VERSION: ${{inputs.voltaVersion }} 
 
 
 jobs:
@@ -44,7 +44,8 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: "构建和发布Docker镜像"
+      - name: "构建和发布指定版本的Docker镜像"
+        if: ${{ env.VERSION != '' }}
         id: build-and-push
         uses: docker/build-push-action@v3
         with:
@@ -53,6 +54,16 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu22.04
           build-args: |
             VERSION: ${{ env.VERSION }}
+      - name: "构建和发布最新版本的Docker镜像"
+        if: ${{ env.VERSION == '' }}
+        id: build-and-push
+        uses: docker/build-push-action@v3
+        with:
+          context: ./ubuntu/
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest-ubuntu22.04
+          build-args: |
+            VERSION: latest            
       - name: "签署已发布的Docker映像"
         if: ${{ github.event_name != 'pull_request' }}
         env:
