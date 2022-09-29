@@ -41,6 +41,7 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: "测试"
         run: |
           echo ::set-output name=tags::${{ steps.meta.outputs.tags }}
           echo ::set-output name=labels::${{ steps.meta.outputs.labels }}
