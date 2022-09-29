@@ -16,8 +16,7 @@ env:
 # 任务
 jobs:
   build: # 作业的名称
-    # 运行环境
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 运行环境
     # 步骤
     steps:
       - name: "拉取仓库代码"
