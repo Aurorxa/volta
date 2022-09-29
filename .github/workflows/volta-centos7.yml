@@ -1,4 +1,4 @@
-name: Docker
+name: volta-centos7
 on:
   schedule:
     - cron: '30 9,17 * * *'
@@ -15,9 +15,8 @@ env:
 
 # 任务
 jobs:
-  build:  
-    runs-on: ubuntu-latest # 运行环境
-    # 步骤
+  docker:
+    runs-on: ubuntu-latest
     steps:
       - name: "拉取仓库代码"
         uses: actions/checkout@v3
