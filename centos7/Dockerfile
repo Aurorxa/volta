@@ -1,6 +1,6 @@
 FROM centos:7.9.2009
 
-# 安装依赖
+# 瀹夎渚濊禆
 RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 \
     && yum -y install deltarpm \
     && yum makecache \
@@ -12,7 +12,7 @@ ARG VERSION=latest
 
 ENV VOLTA_VERSION $VERSION
 
-# 安装 Rust
+# 瀹夎 Rust
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
 ENV PATH="/root/.cargo/bin:${PATH}"
 
@@ -21,13 +21,13 @@ ENV BASH_ENV ~/.bashrc
 ENV VOLTA_HOME /root/.volta
 ENV PATH $VOLTA_HOME/bin:$PATH
 RUN \
-  # 安装 Volta
+  # 瀹夎 Volta
   if [ "$VERSION" = "latest" ]; \
   then \
   curl https://get.volta.sh | bash; \
   else \
   curl https://get.volta.sh | bash -s -- --version $VERSION; \
   fi \
-  # 测试 install
+  # 娴嬭瘯 install
   && ls -l ~/.volta/bin \
   && volta --version
