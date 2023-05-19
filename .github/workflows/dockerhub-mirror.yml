@@ -3,11 +3,15 @@ name: dockerhub-mirror
 on:
   workflow_dispatch:
     inputs:
+      src-registry:
+        description: '原始镜像仓库的地址 (eg. docker.io)'
+        required: true
+        default: 'docker.io'
       dockerhub-repo:
-        description: 'DockerHub 的镜像仓库地址（eg. nginx 或 aurorxa/nginx）'
+        description: '原始镜像的名称（eg. nginx 或 aurorxa/nginx）'
         required: true
       dockerhub-tag:
-        description: 'DockerHub 镜像的 tag 版本（eg.latest）'
+        description: '原始镜像的 tag 版本（eg. latest）'
         required: true
         default: 'latest'
       dest-registry:
@@ -15,7 +19,7 @@ on:
         required: true
         default: 'quay.io'
       dest-repo:
-        description: '目标镜像地址 (eg. aurorxa/nginx)'
+        description: '目标镜像的名称 (eg. aurorxa/nginx)'
         required: true
       dest-tag: 
         description: '目标镜像的 tag 版本 (eg. latest)'
@@ -32,15 +36,19 @@ jobs:
         uses: docker/setup-qemu-action@v2
       - name: '安装 Docker Buildx'
         uses: docker/setup-buildx-action@v2
-      - name: '登录到 DockerHub 镜像仓库中'
+      - name: '登录到 ${{ github.event.inputs.src-registry }} 镜像仓库中'
         uses: docker/login-action@v2
         with:
+          registry: ${{ github.event.inputs.src-registry }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: '拉取 DockerHub 中的镜像'
         if: ${{ github.event.inputs.dest-repo }}
         run: |
-          docker pull ${{ github.event.inputs.dockerhub-repo }}:${{ github.event.inputs.dockerhub-tag }}
+          docker pull ${{ github.event.inputs.src-registry }}/${{ github.event.inputs.dockerhub-repo }}:${{ github.event.inputs.dockerhub-tag }}
+      - name: '查看本地镜像'
+        if: ${{ github.event.inputs.dest-repo }}
+        run : |
           docker images
       - name: '登录到 ${{ github.event.inputs.dest-registry }} 镜像仓库中'
         uses: docker/login-action@v2
@@ -48,9 +56,15 @@ jobs:
           registry: ${{ github.event.inputs.dest-registry }}
           username: ${{ secrets.DEST_USERNAME }}
           password: ${{ secrets.DEST_PASSWORD }}
+      - name: '给镜像打标签'
+        if: ${{ github.event.inputs.dest-repo }}
+        run: |
+          docker tag ${{ github.event.inputs.src-registry }}/${{ github.event.inputs.dockerhub-repo }}:${{ github.event.inputs.dockerhub-tag }} ${{ github.event.inputs.dest-registry }}/${{ github.event.inputs.dest-repo }}:${{ github.event.inputs.dest-tag }}
+      - name: '查看本地镜像'
+        if: ${{ github.event.inputs.dest-repo }}
+        run: |
+          docker images
       - name: '推送镜像到 ${{ github.event.inputs.dest-registry }} 中'
         if: ${{ github.event.inputs.dest-repo }}
         run: |
-          docker tag ${{ github.event.inputs.dockerhub-repo }}:${{ github.event.inputs.dockerhub-tag }} ${{ github.event.inputs.dest-registry }}/${{ github.event.inputs.dest-repo }}:${{ github.event.inputs.dest-tag }}
-          docker images
           docker push ${{ github.event.inputs.dest-registry }}/${{ github.event.inputs.dest-repo }}:${{ github.event.inputs.dest-tag }}
