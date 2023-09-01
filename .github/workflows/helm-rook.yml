@@ -19,8 +19,8 @@ jobs:
         with:
           cache: false
           kubernetes-version: ${{ github.event.inputs.k8s-version }}
-          cpus: 32
-          memory: 32000m
+          cpus: max
+          memory: max
       - name: '测试k8s是否安装成功'
         run: |
           kubectl get pods -A
