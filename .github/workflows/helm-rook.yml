@@ -44,6 +44,7 @@ jobs:
           helm install --namespace rook-ceph rook-ceph-cluster rook/rook-ceph-cluster --set operatorNamespace=rook-ceph --set cephClusterSpec.storage.deviceFilter="^sd." --set cephClusterSpec.cephVersion.image=quay.io/ceph/ceph:v17.2.3
       - name: '测试rook-cluste是否安装成功'
         run: |
+          kubectl wait --for=condition=ready pods -n rook-ceph --all
           kubectl get pod -A
           kubectl --namespace rook-ceph get cephcluster -o wide
       - name: '通过rook-ceph-tools测试Rook-ceph是否安装成功'
