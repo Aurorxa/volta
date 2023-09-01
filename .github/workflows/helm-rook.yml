@@ -1,0 +1,54 @@
+name: helm-rook
+
+on:
+  workflow_dispatch:
+    inputs:
+      k8s-version:
+        description: 'k8s的版本'
+        required: false
+        default: 'v1.23.17'
+jobs:
+  # Task name
+  rook-ceph:
+    # Runtime environment  
+    runs-on: ubuntu-latest
+    steps:
+      - name: "安装k8s"
+        uses: medyagh/setup-minikube@latest
+        id: minikube
+        with:
+          cache: false
+          kubernetes-version: ${{ github.event.inputs.k8s-version }}
+          cpus: 32
+          memory: 32000m
+      - Name: '测试k8s是否安装成功'
+        run: |
+          kubectl get pods -A
+      - name: '安装Helm'
+        uses: Azure/setup-helm@v3  
+      - name: 'Test if Helm is installed'
+        run: |
+          helm version       
+      - name: 'Helm安装rook源'
+        run: |
+          helm repo add rook https:charts.rook.io/release
+          helm repo update
+          helm repo list
+      - name: 'Helm安装rook-operator'
+        run： |
+          helm install --namespace rook-ceph rook-ceph rook-release/rook-ceph --create-namespace --set image.repository=rook/ceph --set csi.cephcsi.image=quay.io/cephcsi/cephcsi:v3.7.2 --set csi.registrar.image=registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1 --set csi.provisioner.image=registry.k8s.io/sig-storage/csi-provisioner:v3.3.0 --set csi.snapshotter.image=registry.k8s.io/sig-storage/csi-snapshotter:v6.1.0 --set csi.attacher.image=registry.k8s.io/ sig-storage/csi-attacher:v4.0.0 --set csi.resizer.image=registry.k8s.io/sig-storage/csi-resizer:v1.6.0
+     - name: '查看rook-operator的安装进度'
+        run: |
+          kubectl --namespace rook-ceph get pods -l "app=rook-ceph-operator" -o wide
+      - name: 'Helm安装rook-cluster'
+        run: |
+          helm install --namespace rook-ceph rook-ceph-cluster rook/rook-ceph-cluster --set operatorNamespace=rook-ceph --set cephClusterSpec.storage.deviceFilter="^sd." --set cephClusterSpec.cephVersion.image=quay.io/ceph/ceph:v17.2.3
+      - name: '测试rook-cluste是否安装成功'
+        run: |
+          kubectl --namespace rook-ceph get cephcluster -o wide
+      - name: '通过rook-ceph-tools测试Rook-ceph是否安装成功'
+        run: |
+          kubectl -n rook-ceph exec -it $(kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o jsonpath='{.items[0].metadata.name}') -- bash -c "ceph status"
+
+
+        
