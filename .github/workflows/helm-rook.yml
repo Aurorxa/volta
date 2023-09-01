@@ -24,6 +24,7 @@ jobs:
       - name: '测试k8s是否安装成功'
         run: |
           kubectl get pods -A
+          kubectl create ns rook-ceph
       - name: '安装Helm'
         uses: Azure/setup-helm@v3  
       - name: '测试Helm是否安装成功'
