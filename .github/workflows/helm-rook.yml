@@ -26,12 +26,12 @@ jobs:
           kubectl get pods -A
       - name: '安装Helm'
         uses: Azure/setup-helm@v3  
-      - name: 'Test if Helm is installed'
+      - name: '测试Helm是否安装成功'
         run: |
           helm version       
       - name: 'Helm安装rook源'
         run: |
-          helm repo add rook https:charts.rook.io/release
+          helm repo add rook https://charts.rook.io/release
           helm repo update
           helm repo list
       - name: 'Helm安装rook-operator'
